@@ -27,10 +27,6 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Set up global environment variables
-        run: |
-          echo "REGISTRY_USERNAME=${{ github.actor }}" >> $GITHUB_ENV
-
       - name: Prepare (checkouts & patches)
         run: make checkouts patches
 
