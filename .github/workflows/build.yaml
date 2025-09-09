@@ -27,6 +27,10 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Set up global environment variables
+        run: |
+          echo "REGISTRY_USERNAME=${{ github.repository_owner }}" >> $GITHUB_ENV
+
       - name: Prepare (checkouts & patches)
         run: make checkouts patches
 
@@ -55,7 +59,7 @@ jobs:
           ### What's available
           
           - 📦 **Raw disk image** (\`metal-arm64.raw.zst\`) for fresh installs
-          - ⚙️  **Installer image** (\`ghcr.io/talos-rpi5/installer:${{ github.ref_name }}\`) for upgrades
+          - ⚙️  **Installer image** (\`ghcr.io/${REGISTRY_USERNAME}/installer:${{ github.ref_name }}\`) for upgrades
           
           ### Install
           
@@ -65,7 +69,7 @@ jobs:
           
           - **Upgrade existing node**
             \`\`\`bash
-            talosctl upgrade --nodes <NODE_IP> --image ghcr.io/talos-rpi5/installer:${{ github.ref_name }}
+            talosctl upgrade --nodes <NODE_IP> --image ghcr.io/${REGISTRY_USERNAME}/installer:${{ github.ref_name }}
             \`\`\`
           
           EOF
