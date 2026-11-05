@@ -19,10 +19,11 @@ The releases on this repository align with the corresponding Talos version. Ther
 ### Examples
 Initial:
 ```
-unzstd metal-arm64-rpi.raw.zst
-dd if=metal-arm64-rpi.raw of=<disk> bs=4M status=progress
+xz -d metal-arm64.raw.xz
+dd if=metal-arm64.raw of=<disk> bs=4M status=progress
 sync
 ```
+Alternatively flash `metal-arm64.raw.xz` directly with Raspberry Pi Imager or balenaEtcher. The disk image uses GRUB as bootloader (U-Boot → GRUB → Talos), same as the upstream Sidero Labs SBC images.
 
 Upgrade:
 ```
@@ -47,6 +48,7 @@ make REGISTRY=ghcr.io REGISTRY_USERNAME=<username> overlay
 # Final step to build the installer and disk image
 make REGISTRY=ghcr.io REGISTRY_USERNAME=<username> installer
 ```
+The disk image is written to `checkouts/talos/_out/metal-arm64.raw.xz`. All three steps push images to `REGISTRY/REGISTRY_USERNAME`.
 
 ## License
 See [LICENSE](LICENSE).

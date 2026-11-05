@@ -1,81 +1,66 @@
-From 87c9e57548bc0aef15d67967a68cc9185216361d Mon Sep 17 00:00:00 2001
+From 55a99a57190d156c2b3da8ffe5404caa8d138fdc Mon Sep 17 00:00:00 2001
 From: Patrick Hunziker <patrick@hunziker.io>
-Date: Sat, 8 Nov 2025 11:31:15 +0100
+Date: Wed, 4 Nov 2026 21:03:25 +0100
 Subject: [PATCH] [PATCH] Patched for Raspberry Pi 5
 
 ---
- hack/modules-arm64.txt | 343 +++++++++++++++++++----------------------
- 1 file changed, 160 insertions(+), 183 deletions(-)
+ hack/modules-arm64.txt | 181 +++++++++++++++++------------------------
+ 1 file changed, 73 insertions(+), 108 deletions(-)
 
 diff --git a/hack/modules-arm64.txt b/hack/modules-arm64.txt
-index 6c48a7465..95c3ee669 100644
+index 2c8fbdd43..98b06de3e 100644
 --- a/hack/modules-arm64.txt
 +++ b/hack/modules-arm64.txt
-@@ -1,213 +1,190 @@
-+modules.builtin.bin
+@@ -1,23 +1,23 @@
++modules.builtin
 +modules.builtin.modinfo
-+modules.builtin.alias.bin
-+modules.dep.bin
-+modules.alias
-+modules.weakdep
 +modules.order
-+modules.symbols.bin
-+modules.dep
-+modules.alias.bin
-+modules.softdep
-+modules.symbols
-+modules.devname
-+kernel/crypto/xor.ko
-+kernel/crypto/async_tx/async_xor.ko
+ kernel/arch/arm64/lib/xor-neon.ko
  kernel/crypto/async_tx/async_memcpy.ko
  kernel/crypto/async_tx/async_pq.ko
  kernel/crypto/async_tx/async_raid6_recov.ko
  kernel/crypto/async_tx/async_tx.ko
--kernel/crypto/async_tx/async_xor.ko
--kernel/crypto/xor.ko
--kernel/drivers/acpi/video.ko
+ kernel/crypto/async_tx/async_xor.ko
++kernel/crypto/blake2b_generic.ko
+ kernel/crypto/hkdf.ko
+ kernel/crypto/xor.ko
++kernel/crypto/xxhash_generic.ko
+ kernel/drivers/acpi/ac.ko
+ kernel/drivers/acpi/battery.ko
+ kernel/drivers/acpi/button.ko
+ kernel/drivers/acpi/fan.ko
+ kernel/drivers/acpi/thermal.ko
+ kernel/drivers/acpi/video.ko
 -kernel/drivers/ata/ahci.ko
+ kernel/drivers/ata/ata_piix.ko
 -kernel/drivers/ata/pata_amd.ko
 -kernel/drivers/ata/pata_marvell.ko
 -kernel/drivers/ata/pata_oldpiix.ko
 -kernel/drivers/ata/pata_sch.ko
--kernel/drivers/block/nbd.ko
--kernel/drivers/block/ublk_drv.ko
-+kernel/crypto/blake2b_generic.ko
-+kernel/crypto/xxhash_generic.ko
-+kernel/crypto/zstd.ko
-+kernel/net/ipv4/ip_gre.ko
-+kernel/net/tls/tls.ko
-+kernel/net/openvswitch/vport-gre.ko
-+kernel/drivers/infiniband/sw/rxe/rdma_rxe.ko
-+kernel/drivers/infiniband/hw/mlx4/mlx4_ib.ko
-+kernel/drivers/infiniband/hw/mlx5/mlx5_ib.ko
-+kernel/drivers/infiniband/hw/hns/hns-roce-hw-v2.ko
-+kernel/drivers/misc/bcm2835_smi.ko
+ kernel/drivers/block/nbd.ko
+ kernel/drivers/block/ublk_drv.ko
+ kernel/drivers/block/virtio_blk.ko
+@@ -26,6 +26,9 @@ kernel/drivers/char/ipmi/ipmi_si.ko
+ kernel/drivers/char/virtio_console.ko
  kernel/drivers/crypto/tegra/tegra-se.ko
--kernel/drivers/gpu/drm/display/drm_dp_aux_bus.ko
--kernel/drivers/gpu/drm/drm_buddy.ko
--kernel/drivers/gpu/drm/drm_exec.ko
--kernel/drivers/gpu/drm/drm_suballoc_helper.ko
-+kernel/drivers/acpi/video.ko
-+kernel/drivers/gpu/drm/vc4/vc4.ko
- kernel/drivers/gpu/drm/drm_ttm_helper.ko
--kernel/drivers/gpu/drm/drm_vram_helper.ko
--kernel/drivers/gpu/drm/hisilicon/hibmc/hibmc-drm.ko
-+kernel/drivers/gpu/drm/ttm/ttm.ko
-+kernel/drivers/gpu/drm/drm_suballoc_helper.ko
- kernel/drivers/gpu/drm/scheduler/gpu-sched.ko
-+kernel/drivers/gpu/drm/drm_buddy.ko
- kernel/drivers/gpu/drm/tegra/tegra-drm.ko
--kernel/drivers/gpu/drm/ttm/ttm.ko
-+kernel/drivers/gpu/drm/amd/amdxcp/amdxcp.ko
+ kernel/drivers/crypto/virtio/virtio_crypto.ko
++kernel/drivers/dma/bcm-sba-raid.ko
 +kernel/drivers/gpu/drm/amd/amdgpu/amdgpu.ko
-+kernel/drivers/gpu/drm/drm_vram_helper.ko
-+kernel/drivers/gpu/drm/hisilicon/hibmc/hibmc-drm.ko
++kernel/drivers/gpu/drm/amd/amdxcp/amdxcp.ko
+ kernel/drivers/gpu/drm/drm_buddy.ko
+ kernel/drivers/gpu/drm/drm_exec.ko
+ kernel/drivers/gpu/drm/drm_gpuvm.ko
+@@ -34,42 +37,24 @@ kernel/drivers/gpu/drm/drm_suballoc_helper.ko
+ kernel/drivers/gpu/drm/drm_ttm_helper.ko
+ kernel/drivers/gpu/drm/drm_vram_helper.ko
+ kernel/drivers/gpu/drm/hisilicon/hibmc/hibmc-drm.ko
 +kernel/drivers/gpu/drm/panfrost/panfrost.ko
-+kernel/drivers/gpu/drm/display/drm_dp_aux_bus.ko
+ kernel/drivers/gpu/drm/scheduler/gpu-sched.ko
+ kernel/drivers/gpu/drm/tegra/tegra-drm.ko
+ kernel/drivers/gpu/drm/ttm/ttm.ko
 +kernel/drivers/gpu/drm/v3d/v3d.ko
-+kernel/drivers/gpu/drm/drm_exec.ko
++kernel/drivers/gpu/drm/vc4/vc4.ko
+ kernel/drivers/gpu/drm/virtio/virtio-gpu.ko
  kernel/drivers/gpu/host1x/host1x.ko
 -kernel/drivers/hid/hid-a4tech.ko
 -kernel/drivers/hid/hid-apple.ko
@@ -87,41 +72,51 @@ index 6c48a7465..95c3ee669 100644
 -kernel/drivers/hid/hid-gyration.ko
 -kernel/drivers/hid/hid-ite.ko
 -kernel/drivers/hid/hid-kensington.ko
--kernel/drivers/hid/hid-lg-g15.ko
--kernel/drivers/hid/hid-logitech.ko
+ kernel/drivers/hid/hid-lg-g15.ko
+ kernel/drivers/hid/hid-logitech.ko
 -kernel/drivers/hid/hid-microsoft.ko
 -kernel/drivers/hid/hid-monterey.ko
+ kernel/drivers/hid/hid-multitouch.ko
 -kernel/drivers/hid/hid-petalynx.ko
 -kernel/drivers/hid/hid-pl.ko
+ kernel/drivers/hid/hid-redragon.ko
 -kernel/drivers/hid/hid-samsung.ko
 -kernel/drivers/hid/hid-sunplus.ko
 -kernel/drivers/hid/hid-topseed.ko
--kernel/drivers/hwmon/i5k_amb.ko
+-kernel/drivers/hid/usbhid/usbhid.ko
+ kernel/drivers/hv/hv_balloon.ko
+ kernel/drivers/hv/hv_utils.ko
+ kernel/drivers/hwmon/acpi_power_meter.ko
+ kernel/drivers/hwmon/drivetemp.ko
+ kernel/drivers/hwmon/i5k_amb.ko
+ kernel/drivers/hwmon/spd5118.ko
 -kernel/drivers/i2c/algos/i2c-algo-bit.ko
 -kernel/drivers/i2c/busses/i2c-i801.ko
 -kernel/drivers/i2c/i2c-mux.ko
--kernel/drivers/infiniband/core/ib_umad.ko
--kernel/drivers/infiniband/core/ib_uverbs.ko
--kernel/drivers/infiniband/core/rdma_ucm.ko
--kernel/drivers/infiniband/hw/hns/hns-roce-hw-v2.ko
--kernel/drivers/infiniband/hw/irdma/irdma.ko
--kernel/drivers/infiniband/hw/mlx4/mlx4_ib.ko
--kernel/drivers/infiniband/hw/mlx5/mlx5_ib.ko
--kernel/drivers/infiniband/sw/rxe/rdma_rxe.ko
--kernel/drivers/irqchip/irq-imx-mu-msi.ko
--kernel/drivers/mailbox/bcm-flexrm-mailbox.ko
+ kernel/drivers/infiniband/core/ib_cm.ko
+ kernel/drivers/infiniband/core/ib_core.ko
+ kernel/drivers/infiniband/core/ib_umad.ko
+@@ -84,6 +69,7 @@ kernel/drivers/infiniband/hw/mlx4/mlx4_ib.ko
+ kernel/drivers/infiniband/hw/mlx5/mlx5_ib.ko
+ kernel/drivers/infiniband/sw/rxe/rdma_rxe.ko
+ kernel/drivers/infiniband/ulp/ipoib/ib_ipoib.ko
++kernel/drivers/input/misc/uinput.ko
+ kernel/drivers/input/misc/xen-kbdfront.ko
+ kernel/drivers/input/mouse/psmouse.ko
+ kernel/drivers/input/serio/hyperv-keyboard.ko
+@@ -91,7 +77,6 @@ kernel/drivers/iommu/iommufd/iommufd.ko
+ kernel/drivers/irqchip/irq-imx-mu-msi.ko
+ kernel/drivers/leds/led-class-multicolor.ko
+ kernel/drivers/mailbox/bcm-flexrm-mailbox.ko
 -kernel/drivers/md/bcache/bcache.ko
--kernel/drivers/md/dm-bio-prison.ko
--kernel/drivers/md/dm-cache-smq.ko
--kernel/drivers/md/dm-cache.ko
--kernel/drivers/md/dm-multipath.ko
--kernel/drivers/md/dm-raid.ko
--kernel/drivers/md/dm-round-robin.ko
--kernel/drivers/md/dm-thin-pool.ko
--kernel/drivers/md/persistent-data/dm-persistent-data.ko
--kernel/drivers/md/raid456.ko
+ kernel/drivers/md/dm-bio-prison.ko
+ kernel/drivers/md/dm-cache-smq.ko
+ kernel/drivers/md/dm-cache.ko
+@@ -103,32 +88,25 @@ kernel/drivers/md/dm-service-time.ko
+ kernel/drivers/md/dm-thin-pool.ko
+ kernel/drivers/md/persistent-data/dm-persistent-data.ko
+ kernel/drivers/md/raid456.ko
 -kernel/drivers/misc/hpilo.ko
--kernel/drivers/mmc/host/sdhci_f_sdh30.ko
 -kernel/drivers/mmc/host/sdhci-acpi.ko
 -kernel/drivers/mmc/host/sdhci-brcmstb.ko
 -kernel/drivers/mmc/host/sdhci-cadence.ko
@@ -133,18 +128,23 @@ index 6c48a7465..95c3ee669 100644
 -kernel/drivers/mmc/host/sdhci-pci.ko
 -kernel/drivers/mmc/host/sdhci-pltfm.ko
 -kernel/drivers/mmc/host/sdhci-tegra.ko
+-kernel/drivers/mmc/host/sdhci-uhs2.ko
 -kernel/drivers/mmc/host/sdhci-xenon-driver.ko
-+kernel/drivers/nvme/host/nvme-rdma.ko
-+kernel/drivers/nvme/target/nvme-loop.ko
-+kernel/drivers/nvme/target/nvmet-fc.ko
-+kernel/drivers/nvme/target/nvmet.ko
-+kernel/drivers/nvme/target/nvmet-tcp.ko
-+kernel/drivers/nvme/target/nvmet-rdma.ko
-+kernel/drivers/nvme/common/nvme-auth.ko
-+kernel/drivers/net/mdio/mdio-mux-meson-gxl.ko
-+kernel/drivers/net/thunderbolt/thunderbolt_net.ko
+-kernel/drivers/mmc/host/sdhci.ko
+-kernel/drivers/mmc/host/sdhci_f_sdh30.ko
++kernel/drivers/media/common/uvc.ko
++kernel/drivers/media/common/videobuf2/videobuf2-common.ko
++kernel/drivers/media/common/videobuf2/videobuf2-memops.ko
++kernel/drivers/media/common/videobuf2/videobuf2-v4l2.ko
++kernel/drivers/media/common/videobuf2/videobuf2-vmalloc.ko
++kernel/drivers/media/mc/mc.ko
++kernel/drivers/media/usb/uvc/uvcvideo.ko
++kernel/drivers/media/v4l2-core/v4l2-dv-timings.ko
++kernel/drivers/media/v4l2-core/videodev.ko
++kernel/drivers/misc/bcm2835_smi.ko
  kernel/drivers/net/ethernet/amazon/ena/ena.ko
--kernel/drivers/net/ethernet/aquantia/atlantic/atlantic.ko
+ kernel/drivers/net/ethernet/amd/xgbe/amd-xgbe.ko
+ kernel/drivers/net/ethernet/aquantia/atlantic/atlantic.ko
  kernel/drivers/net/ethernet/atheros/alx/alx.ko
 -kernel/drivers/net/ethernet/broadcom/bnx2.ko
 -kernel/drivers/net/ethernet/broadcom/bnx2x/bnx2x.ko
@@ -152,67 +152,50 @@ index 6c48a7465..95c3ee669 100644
 -kernel/drivers/net/ethernet/broadcom/tg3.ko
 -kernel/drivers/net/ethernet/cavium/common/cavium_ptp.ko
 -kernel/drivers/net/ethernet/cisco/enic/enic.ko
- kernel/drivers/net/ethernet/google/gve/gve.ko
--kernel/drivers/net/ethernet/hisilicon/hip04_eth.ko
-+kernel/drivers/net/ethernet/sfc/sfc.ko
-+kernel/drivers/net/ethernet/sfc/siena/sfc-siena.ko
-+kernel/drivers/net/ethernet/mellanox/mlx4/mlx4_en.ko
-+kernel/drivers/net/ethernet/mellanox/mlx4/mlx4_core.ko
-+kernel/drivers/net/ethernet/mellanox/mlx5/core/mlx5_core.ko
-+kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_pci.ko
-+kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_minimal.ko
-+kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_i2c.ko
-+kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_spectrum.ko
-+kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_core.ko
-+kernel/drivers/net/ethernet/mellanox/mlxfw/mlxfw.ko
-+kernel/drivers/net/ethernet/chelsio/cxgb4/cxgb4.ko
-+kernel/drivers/net/ethernet/chelsio/cxgb3/cxgb3.ko
-+kernel/drivers/net/ethernet/chelsio/inline_crypto/ch_ipsec/ch_ipsec.ko
 +kernel/drivers/net/ethernet/chelsio/cxgb/cxgb.ko
++kernel/drivers/net/ethernet/chelsio/cxgb3/cxgb3.ko
++kernel/drivers/net/ethernet/chelsio/cxgb4/cxgb4.ko
 +kernel/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf.ko
++kernel/drivers/net/ethernet/chelsio/inline_crypto/ch_ipsec/ch_ipsec.ko
+ kernel/drivers/net/ethernet/google/gve/gve.ko
+ kernel/drivers/net/ethernet/hisilicon/hip04_eth.ko
  kernel/drivers/net/ethernet/hisilicon/hisi_femac.ko
--kernel/drivers/net/ethernet/hisilicon/hix5hd2_gmac.ko
--kernel/drivers/net/ethernet/hisilicon/hns_mdio.ko
-+kernel/drivers/net/ethernet/hisilicon/hip04_eth.ko
- kernel/drivers/net/ethernet/hisilicon/hns/hnae.ko
- kernel/drivers/net/ethernet/hisilicon/hns/hns_dsaf.ko
- kernel/drivers/net/ethernet/hisilicon/hns/hns_enet_drv.ko
--kernel/drivers/net/ethernet/hisilicon/hns3/hclge-common.ko
- kernel/drivers/net/ethernet/hisilicon/hns3/hclge.ko
-+kernel/drivers/net/ethernet/hisilicon/hns3/hns3.ko
- kernel/drivers/net/ethernet/hisilicon/hns3/hclgevf.ko
+@@ -142,24 +120,7 @@ kernel/drivers/net/ethernet/hisilicon/hns3/hclgevf.ko
  kernel/drivers/net/ethernet/hisilicon/hns3/hnae3.ko
--kernel/drivers/net/ethernet/hisilicon/hns3/hns3.ko
+ kernel/drivers/net/ethernet/hisilicon/hns3/hns3.ko
+ kernel/drivers/net/ethernet/hisilicon/hns_mdio.ko
 -kernel/drivers/net/ethernet/intel/e100.ko
 -kernel/drivers/net/ethernet/intel/e1000/e1000.ko
 -kernel/drivers/net/ethernet/intel/e1000e/e1000e.ko
 -kernel/drivers/net/ethernet/intel/i40e/i40e.ko
 -kernel/drivers/net/ethernet/intel/iavf/iavf.ko
 -kernel/drivers/net/ethernet/intel/ice/ice.ko
+ kernel/drivers/net/ethernet/intel/idpf/idpf.ko
 -kernel/drivers/net/ethernet/intel/igb/igb.ko
 -kernel/drivers/net/ethernet/intel/igbvf/igbvf.ko
 -kernel/drivers/net/ethernet/intel/igc/igc.ko
 -kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
 -kernel/drivers/net/ethernet/intel/ixgbevf/ixgbevf.ko
 -kernel/drivers/net/ethernet/intel/libeth/libeth.ko
+-kernel/drivers/net/ethernet/intel/libeth/libeth_xdp.ko
 -kernel/drivers/net/ethernet/intel/libie/libie.ko
+-kernel/drivers/net/ethernet/intel/libie/libie_adminq.ko
+-kernel/drivers/net/ethernet/intel/libie/libie_fwlog.ko
 -kernel/drivers/net/ethernet/marvell/sky2.ko
--kernel/drivers/net/ethernet/mellanox/mlx4/mlx4_core.ko
--kernel/drivers/net/ethernet/mellanox/mlx4/mlx4_en.ko
--kernel/drivers/net/ethernet/mellanox/mlx5/core/mlx5_core.ko
--kernel/drivers/net/ethernet/mellanox/mlxfw/mlxfw.ko
--kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_core.ko
--kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_i2c.ko
--kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_minimal.ko
--kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_pci.ko
--kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_spectrum.ko
+ kernel/drivers/net/ethernet/mellanox/mlx4/mlx4_core.ko
+ kernel/drivers/net/ethernet/mellanox/mlx4/mlx4_en.ko
+ kernel/drivers/net/ethernet/mellanox/mlx5/core/mlx5_core.ko
+@@ -169,47 +130,54 @@ kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_i2c.ko
+ kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_minimal.ko
+ kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_pci.ko
+ kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_spectrum.ko
 -kernel/drivers/net/ethernet/qlogic/qed/qed.ko
 -kernel/drivers/net/ethernet/qlogic/qede/qede.ko
 -kernel/drivers/net/ethernet/qlogic/qlcnic/qlcnic.ko
 -kernel/drivers/net/ethernet/realtek/8139too.ko
 -kernel/drivers/net/ethernet/realtek/r8169.ko
--kernel/drivers/net/ethernet/sfc/sfc.ko
--kernel/drivers/net/ethernet/sfc/siena/sfc-siena.ko
+ kernel/drivers/net/ethernet/sfc/sfc.ko
+ kernel/drivers/net/ethernet/sfc/siena/sfc-siena.ko
 -kernel/drivers/net/ethernet/stmicro/stmmac/dwmac-dwc-qos-eth.ko
 -kernel/drivers/net/ethernet/stmicro/stmmac/dwmac-generic.ko
 -kernel/drivers/net/ethernet/stmicro/stmmac/dwmac-imx.ko
@@ -220,171 +203,144 @@ index 6c48a7465..95c3ee669 100644
 -kernel/drivers/net/ethernet/stmicro/stmmac/dwmac-meson.ko
 -kernel/drivers/net/ethernet/stmicro/stmmac/dwmac-meson8b.ko
 -kernel/drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.ko
+ kernel/drivers/net/ethernet/stmicro/stmmac/dwmac-renesas-gbeth.ko
 -kernel/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.ko
+ kernel/drivers/net/ethernet/stmicro/stmmac/dwmac-sun55i.ko
 -kernel/drivers/net/ethernet/stmicro/stmmac/dwmac-sun8i.ko
 -kernel/drivers/net/ethernet/stmicro/stmmac/dwmac-sunxi.ko
 -kernel/drivers/net/ethernet/stmicro/stmmac/dwmac-tegra.ko
 -kernel/drivers/net/ethernet/stmicro/stmmac/stmmac-pci.ko
 -kernel/drivers/net/ethernet/stmicro/stmmac/stmmac-platform.ko
 -kernel/drivers/net/ethernet/stmicro/stmmac/stmmac.ko
+ kernel/drivers/net/hyperv/hv_netvsc.ko
+ kernel/drivers/net/ifb.ko
+ kernel/drivers/net/macsec.ko
 -kernel/drivers/net/mdio.ko
+ kernel/drivers/net/mdio/mdio-i2c.ko
++kernel/drivers/net/mdio/mdio-mux-meson-gxl.ko
+ kernel/drivers/net/pcs/pcs-rzn1-miic.ko
 -kernel/drivers/net/pcs/pcs_xpcs.ko
 -kernel/drivers/net/phy/dp83867.ko
--kernel/drivers/net/usb/r8152.ko
--kernel/drivers/net/vmxnet3/vmxnet3.ko
-+kernel/drivers/net/ethernet/hisilicon/hns3/hclge-common.ko
-+kernel/drivers/net/ethernet/hisilicon/hns_mdio.ko
-+kernel/drivers/net/ethernet/hisilicon/hix5hd2_gmac.ko
 +kernel/drivers/net/phy/ax88796b.ko
-+kernel/drivers/net/usb/sr9800.ko
-+kernel/drivers/net/usb/rndis_host.ko
-+kernel/drivers/net/usb/cdc_mbim.ko
-+kernel/drivers/net/usb/zaurus.ko
-+kernel/drivers/net/usb/kalmia.ko
-+kernel/drivers/net/usb/usbnet.ko
-+kernel/drivers/net/usb/dm9601.ko
-+kernel/drivers/net/usb/plusb.ko
-+kernel/drivers/net/usb/gl620a.ko
-+kernel/drivers/net/usb/cdc_subset.ko
-+kernel/drivers/net/usb/smsc75xx.ko
-+kernel/drivers/net/usb/cx82310_eth.ko
-+kernel/drivers/net/usb/mcs7830.ko
-+kernel/drivers/net/usb/ch9200.ko
-+kernel/drivers/net/usb/smsc95xx.ko
-+kernel/drivers/net/usb/huawei_cdc_ncm.ko
-+kernel/drivers/net/usb/r8153_ecm.ko
+ kernel/drivers/net/phy/mscc/mscc.ko
+ kernel/drivers/net/phy/sfp.ko
+-kernel/drivers/net/usb/r8152.ko
++kernel/drivers/net/thunderbolt/thunderbolt_net.ko
++kernel/drivers/net/usb/aqc111.ko
++kernel/drivers/net/usb/asix.ko
 +kernel/drivers/net/usb/ax88179_178a.ko
 +kernel/drivers/net/usb/cdc_eem.ko
-+kernel/drivers/net/usb/sierra_net.ko
-+kernel/drivers/net/usb/asix.ko
-+kernel/drivers/net/usb/net1080.ko
-+kernel/drivers/net/usb/cdc-phonet.ko
-+kernel/drivers/net/usb/aqc111.ko
-+kernel/drivers/net/usb/qmi_wwan.ko
-+kernel/drivers/net/usb/sr9700.ko
-+kernel/drivers/net/usb/lg-vl600.ko
-+kernel/drivers/net/usb/int51x1.ko
-+kernel/drivers/net/usb/cdc_ncm.ko
 +kernel/drivers/net/usb/cdc_ether.ko
++kernel/drivers/net/usb/cdc_mbim.ko
++kernel/drivers/net/usb/cdc_ncm.ko
++kernel/drivers/net/usb/cdc_subset.ko
++kernel/drivers/net/usb/ch9200.ko
++kernel/drivers/net/usb/cx82310_eth.ko
++kernel/drivers/net/usb/dm9601.ko
++kernel/drivers/net/usb/gl620a.ko
++kernel/drivers/net/usb/huawei_cdc_ncm.ko
++kernel/drivers/net/usb/int51x1.ko
++kernel/drivers/net/usb/kalmia.ko
++kernel/drivers/net/usb/lg-vl600.ko
++kernel/drivers/net/usb/mcs7830.ko
++kernel/drivers/net/usb/net1080.ko
++kernel/drivers/net/usb/plusb.ko
++kernel/drivers/net/usb/qmi_wwan.ko
++kernel/drivers/net/usb/r8153_ecm.ko
++kernel/drivers/net/usb/rndis_host.ko
++kernel/drivers/net/usb/sierra_net.ko
++kernel/drivers/net/usb/smsc75xx.ko
++kernel/drivers/net/usb/smsc95xx.ko
++kernel/drivers/net/usb/sr9700.ko
++kernel/drivers/net/usb/sr9800.ko
++kernel/drivers/net/usb/usbnet.ko
++kernel/drivers/net/usb/zaurus.ko
+ kernel/drivers/net/virtio_net.ko
+-kernel/drivers/net/vmxnet3/vmxnet3.ko
  kernel/drivers/net/vrf.ko
--kernel/drivers/nvme/common/nvme-auth.ko
--kernel/drivers/nvme/host/nvme-rdma.ko
+ kernel/drivers/net/xen-netfront.ko
+ kernel/drivers/nvme/common/nvme-auth.ko
+ kernel/drivers/nvme/host/nvme-rdma.ko
 -kernel/drivers/nvme/host/nvme.ko
--kernel/drivers/nvme/target/nvme-loop.ko
--kernel/drivers/nvme/target/nvmet-fc.ko
--kernel/drivers/nvme/target/nvmet-rdma.ko
--kernel/drivers/nvme/target/nvmet-tcp.ko
--kernel/drivers/nvme/target/nvmet.ko
--kernel/drivers/perf/hisilicon/hisi_pcie_pmu.ko
--kernel/drivers/perf/hisilicon/hisi_uncore_cpa_pmu.ko
--kernel/drivers/perf/hisilicon/hisi_uncore_ddrc_pmu.ko
--kernel/drivers/perf/hisilicon/hisi_uncore_hha_pmu.ko
--kernel/drivers/perf/hisilicon/hisi_uncore_l3c_pmu.ko
--kernel/drivers/perf/hisilicon/hisi_uncore_pa_pmu.ko
--kernel/drivers/perf/hisilicon/hisi_uncore_pmu.ko
--kernel/drivers/perf/hisilicon/hisi_uncore_sllc_pmu.ko
--kernel/drivers/perf/hisilicon/hisi_uncore_uc_pmu.ko
--kernel/drivers/perf/hisilicon/hns3_pmu.ko
-+kernel/drivers/irqchip/irq-imx-mu-msi.ko
-+kernel/drivers/input/misc/uinput.ko
-+kernel/drivers/mailbox/bcm-flexrm-mailbox.ko
-+kernel/drivers/hwmon/i5k_amb.ko
- kernel/drivers/scsi/fcoe/libfcoe.ko
--kernel/drivers/scsi/hisi_sas/hisi_sas_main.ko
-+kernel/drivers/scsi/mpi3mr/mpi3mr.ko
-+kernel/drivers/scsi/qla2xxx/qla2xxx.ko
-+kernel/drivers/scsi/lpfc/lpfc.ko
-+kernel/drivers/scsi/qedf/qedf.ko
+ kernel/drivers/nvme/target/nvme-loop.ko
+ kernel/drivers/nvme/target/nvmet-fc.ko
+ kernel/drivers/nvme/target/nvmet-rdma.ko
+@@ -231,19 +199,16 @@ kernel/drivers/scsi/hisi_sas/hisi_sas_main.ko
  kernel/drivers/scsi/hisi_sas/hisi_sas_v1_hw.ko
--kernel/drivers/scsi/hisi_sas/hisi_sas_v2_hw.ko
-+kernel/drivers/scsi/hisi_sas/hisi_sas_main.ko
+ kernel/drivers/scsi/hisi_sas/hisi_sas_v2_hw.ko
  kernel/drivers/scsi/hisi_sas/hisi_sas_v3_hw.ko
 -kernel/drivers/scsi/hpsa.ko
-+kernel/drivers/scsi/hisi_sas/hisi_sas_v2_hw.ko
+ kernel/drivers/scsi/hv_storvsc.ko
  kernel/drivers/scsi/libfc/libfc.ko
--kernel/drivers/scsi/lpfc/lpfc.ko
+ kernel/drivers/scsi/lpfc/lpfc.ko
 -kernel/drivers/scsi/megaraid/megaraid_sas.ko
--kernel/drivers/scsi/mpi3mr/mpi3mr.ko
+ kernel/drivers/scsi/mpi3mr/mpi3mr.ko
 -kernel/drivers/scsi/mpt3sas/mpt3sas.ko
--kernel/drivers/scsi/qedf/qedf.ko
--kernel/drivers/scsi/qla2xxx/qla2xxx.ko
+ kernel/drivers/scsi/qedf/qedf.ko
+ kernel/drivers/scsi/qla2xxx/qla2xxx.ko
 -kernel/drivers/scsi/smartpqi/smartpqi.ko
--kernel/drivers/uio/uio_pci_generic.ko
--kernel/drivers/uio/uio.ko
+ kernel/drivers/scsi/virtio_scsi.ko
+ kernel/drivers/scsi/xen-scsifront.ko
+ kernel/drivers/target/target_core_mod.ko
++kernel/drivers/thunderbolt/thunderbolt.ko
+ kernel/drivers/ufs/core/ufshcd-core.ko
+ kernel/drivers/ufs/host/ufshcd-pci.ko
+ kernel/drivers/uio/uio.ko
+@@ -257,6 +222,7 @@ kernel/drivers/usb/chipidea/ci_hdrc_tegra.ko
+ kernel/drivers/usb/chipidea/ci_hdrc_usb2.ko
+ kernel/drivers/usb/chipidea/usbmisc_imx.ko
+ kernel/drivers/usb/class/cdc-acm.ko
++kernel/drivers/usb/class/cdc-wdm.ko
+ kernel/drivers/usb/host/ehci-hcd.ko
+ kernel/drivers/usb/host/ehci-orion.ko
+ kernel/drivers/usb/host/ehci-pci.ko
+@@ -267,10 +233,8 @@ kernel/drivers/usb/host/xhci-plat-hcd.ko
+ kernel/drivers/usb/host/xhci-rcar-hcd.ko
+ kernel/drivers/usb/host/xhci-tegra.ko
+ kernel/drivers/usb/misc/sisusbvga/sisusbvga.ko
 -kernel/drivers/usb/serial/ch341.ko
 -kernel/drivers/usb/serial/cp210x.ko
 -kernel/drivers/usb/serial/ftdi_sio.ko
 -kernel/drivers/usb/serial/pl2303.ko
--kernel/drivers/vfio/pci/vfio-pci-core.ko
-+kernel/drivers/thunderbolt/thunderbolt.ko
- kernel/drivers/vfio/pci/vfio-pci.ko
--kernel/drivers/vfio/vfio_iommu_type1.ko
-+kernel/drivers/vfio/pci/vfio-pci-core.ko
- kernel/drivers/vfio/vfio.ko
++kernel/drivers/usb/serial/option.ko
++kernel/drivers/usb/serial/usb_wwan.ko
+ kernel/drivers/usb/storage/uas.ko
+ kernel/drivers/usb/storage/ums-alauda.ko
+ kernel/drivers/usb/storage/ums-cypress.ko
+@@ -304,16 +268,13 @@ kernel/drivers/vhost/vhost_scsi.ko
+ kernel/drivers/vhost/vhost_vdpa.ko
+ kernel/drivers/vhost/vringh.ko
+ kernel/drivers/virt/vmgenid.ko
 -kernel/drivers/virtio/virtio_balloon.ko
+ kernel/drivers/virtio/virtio_dma_buf.ko
 -kernel/drivers/virtio/virtio_input.ko
 -kernel/drivers/virtio/virtio_mmio.ko
+-kernel/drivers/virtio/virtio_pci.ko
 -kernel/drivers/virtio/virtio_pci_legacy_dev.ko
 -kernel/drivers/virtio/virtio_pci_modern_dev.ko
--kernel/drivers/virtio/virtio_pci.ko
-+kernel/drivers/vfio/vfio_iommu_type1.ko
-+kernel/drivers/usb/class/cdc-wdm.ko
-+kernel/drivers/usb/serial/usb_wwan.ko
-+kernel/drivers/usb/serial/option.ko
+ kernel/drivers/virtio/virtio_vdpa.ko
  kernel/drivers/watchdog/sbsa_gwdt.ko
-+kernel/drivers/md/dm-round-robin.ko
-+kernel/drivers/md/raid456.ko
-+kernel/drivers/md/persistent-data/dm-persistent-data.ko
-+kernel/drivers/md/dm-multipath.ko
-+kernel/drivers/md/dm-bio-prison.ko
-+kernel/drivers/md/dm-thin-pool.ko
-+kernel/drivers/md/dm-raid.ko
-+kernel/drivers/md/dm-cache.ko
-+kernel/drivers/md/dm-cache-smq.ko
-+kernel/drivers/dma/bcm-sba-raid.ko
-+kernel/drivers/uio/uio.ko
-+kernel/drivers/uio/uio_pci_generic.ko
-+kernel/drivers/perf/hisilicon/hisi_uncore_l3c_pmu.ko
-+kernel/drivers/perf/hisilicon/hns3_pmu.ko
-+kernel/drivers/perf/hisilicon/hisi_uncore_cpa_pmu.ko
-+kernel/drivers/perf/hisilicon/hisi_pcie_pmu.ko
-+kernel/drivers/perf/hisilicon/hisi_uncore_pa_pmu.ko
-+kernel/drivers/perf/hisilicon/hisi_uncore_hha_pmu.ko
-+kernel/drivers/perf/hisilicon/hisi_uncore_uc_pmu.ko
-+kernel/drivers/perf/hisilicon/hisi_uncore_ddrc_pmu.ko
-+kernel/drivers/perf/hisilicon/hisi_uncore_pmu.ko
-+kernel/drivers/perf/hisilicon/hisi_uncore_sllc_pmu.ko
-+kernel/drivers/block/nbd.ko
-+kernel/drivers/media/usb/uvc/uvcvideo.ko
-+kernel/drivers/media/common/uvc.ko
-+kernel/drivers/media/common/videobuf2/videobuf2-vmalloc.ko
-+kernel/drivers/media/common/videobuf2/videobuf2-memops.ko
-+kernel/drivers/media/common/videobuf2/videobuf2-common.ko
-+kernel/drivers/media/common/videobuf2/videobuf2-v4l2.ko
-+kernel/drivers/media/v4l2-core/v4l2-dv-timings.ko
-+kernel/drivers/media/v4l2-core/videodev.ko
-+kernel/drivers/media/mc/mc.ko
-+kernel/arch/arm64/lib/xor-neon.ko
-+kernel/lib/raid6/raid6_pq.ko
++kernel/fs/binfmt_misc.ko
++kernel/fs/btrfs/btrfs.ko
+ kernel/fs/fuse/virtiofs.ko
++kernel/fs/nfsd/nfsd.ko
  kernel/lib/objagg.ko
  kernel/lib/parman.ko
--kernel/lib/raid6/raid6_pq.ko
--kernel/net/ipv4/ip_gre.ko
--kernel/net/openvswitch/vport-gre.ko
--kernel/net/tls/tls.ko
-+kernel/fs/btrfs/btrfs.ko
-+kernel/fs/nfsd/nfsd.ko
-+kernel/fs/binfmt_misc.ko
+ kernel/lib/raid6/raid6_pq.ko
+@@ -325,6 +286,10 @@ kernel/net/tls/tls.ko
+ kernel/net/vmw_vsock/hv_sock.ko
+ kernel/net/vmw_vsock/vmw_vsock_virtio_transport.ko
+ kernel/net/xfrm/xfrm_interface.ko
+-modules.builtin
+-modules.builtin.modinfo
+-modules.order
 +kernel/sound/core/snd-pcm-dmaengine.ko
-+kernel/sound/core/snd.ko
 +kernel/sound/core/snd-pcm.ko
 +kernel/sound/core/snd-timer.ko
++kernel/sound/core/snd.ko
 +kernel/sound/soc/codecs/snd-soc-hdmi-codec.ko
 +kernel/sound/soc/snd-soc-core.ko
 +kernel/sound/soundcore.ko
- modules.builtin
--modules.builtin.modinfo
--modules.order
 -- 
-2.50.1 (Apple Git-155)
+2.54.0 (Apple Git-157)
 
