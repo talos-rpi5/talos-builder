@@ -14,7 +14,7 @@ TAG ?= $(shell git describe --tags --exact-match)
 
 EXTENSIONS ?= \
 	ghcr.io/siderolabs/gvisor:20260831.0@sha256:cbf753d767267e3f6b18be0875ee103d27c3153879019c07c6ad7eb51299d727 \
-	ghcr.io/siderolabs/iscsi-tools:v0.2.0@sha256:c1eca91fb4458ce0c50e6e36968b325ab5b3e5a554b3ad0426795efec4f2a3d5
+	ghcr.io/siderolabs/iscsi-tools:v0.2.0@sha256:584e1d106e424d3e17ddd43bddf892b386748f10d11a9fd024a358f0d42c0a2e
 EXTENSION_ARGS = $(foreach ext,$(EXTENSIONS),--system-extension-image=$(ext))
 
 PKG_REPOSITORY = https://github.com/siderolabs/pkgs.git

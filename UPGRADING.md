@@ -84,7 +84,7 @@ git format-patch --output-directory "../../patches/siderolabs/pkgs" HEAD~1
 ```
 
 ### Intentional kernel config customizations
-* `CONFIG_ARM64_16K_PAGES=y` (BCM2712 page size), `CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y`
+* `CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y`
 * BCM2712/RP1 platform: `BCM2712_IOMMU`, `BCM2712_MIP`, `PINCTRL_BCM2712`, `MFD_RP1`, `FIRMWARE_RP1`, `MBOX_RP1`, `RP1_PIO`,
   `PINCTRL_RP1`, `COMMON_CLK_RP1(_SDIO)`, `PWM_RP1`, `PWM_PIO_RP1`, `WS2812_PIO_RP1`, `SPI_RP2040_GPIO_BRIDGE`
 * Raspberry Pi peripherals: `BCM2835_THERMAL`, `BCM2835_SMI(_DEV)=m`, `RASPBERRYPI_GPIOMEM`, `NVMEM_RASPBERRYPI_OTP`, `RTC_DRV_RPI`,
@@ -93,6 +93,11 @@ git format-patch --output-directory "../../patches/siderolabs/pkgs" HEAD~1
 * RPi-only sound/video/panel/legacy drivers (`SND_BCM2708_SOC_*`, `VIDEO_RP1_CFE`, `USB_DWCOTG`, …) explicitly disabled
 * Storage, NIC, HID, MMC and virtio drivers (NVMe, AHCI, igb/ixgbe/i40e/ice, r8169, tg3, stmmac, sdhci, …) built in (`=y`)
   instead of upstream's `=m`
+
+The page size intentionally stays at upstream's 4K (`CONFIG_ARM64_4K_PAGES=y`), like every other Talos arm64 kernel. Don't carry
+over `CONFIG_ARM64_16K_PAGES` from the RPi `bcm2712_defconfig`: 16K pages break userspace that assumes 4K pages and
+drop 4K-only options (`THP_SWAP`, `MESON_SM`, `DRM_XE`, …). After `olddefconfig`,
+`git diff <stock> -- kernel/build/config-arm64 | grep -E '^[-+].*(PAGE|VA_BITS|MAX_ORDER|CONT_P|MMAP_RND)'` must print nothing.
 
 ## Talos
 The [siderolabs/talos](https://github.com/siderolabs/talos) repository is where packages and Talos come together. We'll need to customise the list of available kernel modules to be copied in to the initramfs.
