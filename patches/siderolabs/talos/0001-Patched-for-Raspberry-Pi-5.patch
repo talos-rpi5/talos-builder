@@ -1,14 +1,14 @@
-From 55a99a57190d156c2b3da8ffe5404caa8d138fdc Mon Sep 17 00:00:00 2001
+From dcedcdd838fcccc19b847695c3f6ac0b963eca66 Mon Sep 17 00:00:00 2001
 From: Patrick Hunziker <patrick@hunziker.io>
-Date: Wed, 4 Nov 2026 21:03:25 +0100
-Subject: [PATCH] [PATCH] Patched for Raspberry Pi 5
+Date: Sun, 15 Nov 2026 12:14:31 +0100
+Subject: [PATCH] Patched for Raspberry Pi 5
 
 ---
  hack/modules-arm64.txt | 181 +++++++++++++++++------------------------
  1 file changed, 73 insertions(+), 108 deletions(-)
 
 diff --git a/hack/modules-arm64.txt b/hack/modules-arm64.txt
-index 2c8fbdd43..98b06de3e 100644
+index 1911ab5d7..93dfcb7bf 100644
 --- a/hack/modules-arm64.txt
 +++ b/hack/modules-arm64.txt
 @@ -1,23 +1,23 @@
@@ -96,7 +96,7 @@ index 2c8fbdd43..98b06de3e 100644
  kernel/drivers/infiniband/core/ib_cm.ko
  kernel/drivers/infiniband/core/ib_core.ko
  kernel/drivers/infiniband/core/ib_umad.ko
-@@ -84,6 +69,7 @@ kernel/drivers/infiniband/hw/mlx4/mlx4_ib.ko
+@@ -85,6 +70,7 @@ kernel/drivers/infiniband/hw/mlx4/mlx4_ib.ko
  kernel/drivers/infiniband/hw/mlx5/mlx5_ib.ko
  kernel/drivers/infiniband/sw/rxe/rdma_rxe.ko
  kernel/drivers/infiniband/ulp/ipoib/ib_ipoib.ko
@@ -104,7 +104,7 @@ index 2c8fbdd43..98b06de3e 100644
  kernel/drivers/input/misc/xen-kbdfront.ko
  kernel/drivers/input/mouse/psmouse.ko
  kernel/drivers/input/serio/hyperv-keyboard.ko
-@@ -91,7 +77,6 @@ kernel/drivers/iommu/iommufd/iommufd.ko
+@@ -92,7 +78,6 @@ kernel/drivers/iommu/iommufd/iommufd.ko
  kernel/drivers/irqchip/irq-imx-mu-msi.ko
  kernel/drivers/leds/led-class-multicolor.ko
  kernel/drivers/mailbox/bcm-flexrm-mailbox.ko
@@ -112,7 +112,7 @@ index 2c8fbdd43..98b06de3e 100644
  kernel/drivers/md/dm-bio-prison.ko
  kernel/drivers/md/dm-cache-smq.ko
  kernel/drivers/md/dm-cache.ko
-@@ -103,32 +88,25 @@ kernel/drivers/md/dm-service-time.ko
+@@ -104,32 +89,25 @@ kernel/drivers/md/dm-service-time.ko
  kernel/drivers/md/dm-thin-pool.ko
  kernel/drivers/md/persistent-data/dm-persistent-data.ko
  kernel/drivers/md/raid456.ko
@@ -160,7 +160,7 @@ index 2c8fbdd43..98b06de3e 100644
  kernel/drivers/net/ethernet/google/gve/gve.ko
  kernel/drivers/net/ethernet/hisilicon/hip04_eth.ko
  kernel/drivers/net/ethernet/hisilicon/hisi_femac.ko
-@@ -142,24 +120,7 @@ kernel/drivers/net/ethernet/hisilicon/hns3/hclgevf.ko
+@@ -143,24 +121,7 @@ kernel/drivers/net/ethernet/hisilicon/hns3/hclgevf.ko
  kernel/drivers/net/ethernet/hisilicon/hns3/hnae3.ko
  kernel/drivers/net/ethernet/hisilicon/hns3/hns3.ko
  kernel/drivers/net/ethernet/hisilicon/hns_mdio.ko
@@ -185,10 +185,10 @@ index 2c8fbdd43..98b06de3e 100644
  kernel/drivers/net/ethernet/mellanox/mlx4/mlx4_core.ko
  kernel/drivers/net/ethernet/mellanox/mlx4/mlx4_en.ko
  kernel/drivers/net/ethernet/mellanox/mlx5/core/mlx5_core.ko
-@@ -169,47 +130,54 @@ kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_i2c.ko
- kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_minimal.ko
+@@ -171,47 +132,54 @@ kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_minimal.ko
  kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_pci.ko
  kernel/drivers/net/ethernet/mellanox/mlxsw/mlxsw_spectrum.ko
+ kernel/drivers/net/ethernet/pensando/ionic/ionic.ko
 -kernel/drivers/net/ethernet/qlogic/qed/qed.ko
 -kernel/drivers/net/ethernet/qlogic/qede/qede.ko
 -kernel/drivers/net/ethernet/qlogic/qlcnic/qlcnic.ko
@@ -265,7 +265,7 @@ index 2c8fbdd43..98b06de3e 100644
  kernel/drivers/nvme/target/nvme-loop.ko
  kernel/drivers/nvme/target/nvmet-fc.ko
  kernel/drivers/nvme/target/nvmet-rdma.ko
-@@ -231,19 +199,16 @@ kernel/drivers/scsi/hisi_sas/hisi_sas_main.ko
+@@ -233,19 +201,16 @@ kernel/drivers/scsi/hisi_sas/hisi_sas_main.ko
  kernel/drivers/scsi/hisi_sas/hisi_sas_v1_hw.ko
  kernel/drivers/scsi/hisi_sas/hisi_sas_v2_hw.ko
  kernel/drivers/scsi/hisi_sas/hisi_sas_v3_hw.ko
@@ -286,7 +286,7 @@ index 2c8fbdd43..98b06de3e 100644
  kernel/drivers/ufs/core/ufshcd-core.ko
  kernel/drivers/ufs/host/ufshcd-pci.ko
  kernel/drivers/uio/uio.ko
-@@ -257,6 +222,7 @@ kernel/drivers/usb/chipidea/ci_hdrc_tegra.ko
+@@ -259,6 +224,7 @@ kernel/drivers/usb/chipidea/ci_hdrc_tegra.ko
  kernel/drivers/usb/chipidea/ci_hdrc_usb2.ko
  kernel/drivers/usb/chipidea/usbmisc_imx.ko
  kernel/drivers/usb/class/cdc-acm.ko
@@ -294,7 +294,7 @@ index 2c8fbdd43..98b06de3e 100644
  kernel/drivers/usb/host/ehci-hcd.ko
  kernel/drivers/usb/host/ehci-orion.ko
  kernel/drivers/usb/host/ehci-pci.ko
-@@ -267,10 +233,8 @@ kernel/drivers/usb/host/xhci-plat-hcd.ko
+@@ -269,10 +235,8 @@ kernel/drivers/usb/host/xhci-plat-hcd.ko
  kernel/drivers/usb/host/xhci-rcar-hcd.ko
  kernel/drivers/usb/host/xhci-tegra.ko
  kernel/drivers/usb/misc/sisusbvga/sisusbvga.ko
@@ -307,7 +307,7 @@ index 2c8fbdd43..98b06de3e 100644
  kernel/drivers/usb/storage/uas.ko
  kernel/drivers/usb/storage/ums-alauda.ko
  kernel/drivers/usb/storage/ums-cypress.ko
-@@ -304,16 +268,13 @@ kernel/drivers/vhost/vhost_scsi.ko
+@@ -306,16 +270,13 @@ kernel/drivers/vhost/vhost_scsi.ko
  kernel/drivers/vhost/vhost_vdpa.ko
  kernel/drivers/vhost/vringh.ko
  kernel/drivers/virt/vmgenid.ko
@@ -327,7 +327,7 @@ index 2c8fbdd43..98b06de3e 100644
  kernel/lib/objagg.ko
  kernel/lib/parman.ko
  kernel/lib/raid6/raid6_pq.ko
-@@ -325,6 +286,10 @@ kernel/net/tls/tls.ko
+@@ -327,6 +288,10 @@ kernel/net/tls/tls.ko
  kernel/net/vmw_vsock/hv_sock.ko
  kernel/net/vmw_vsock/vmw_vsock_virtio_transport.ko
  kernel/net/xfrm/xfrm_interface.ko

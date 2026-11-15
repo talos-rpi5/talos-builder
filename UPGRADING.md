@@ -79,7 +79,7 @@ make local-kernel-build TARGET_ARGS="--build-arg=KERNEL_TARGET=olddefconfig" PLA
 5. Commit and regenerate the patch
 ```
 cd checkouts/pkgs
-git commit -am '[PATCH] Patched for Raspberry Pi 5'
+git commit -am 'Patched for Raspberry Pi 5'
 git format-patch --output-directory "../../patches/siderolabs/pkgs" HEAD~1
 ```
 
@@ -110,7 +110,7 @@ The disk image is generated with the overlay's `rpi5` imager profile (`profiles/
 Don't switch back to the `metal` profile: it uses sd-boot on arm64, and since Talos 1.14 sd-boot doesn't run the overlay
 installer for disk images, so firmware, `u-boot.bin` and `config.txt` would be missing.
 
-After building, check that the image's EFI partition contains `u-boot.bin`, `config.txt` and the firmware (`start4.elf`, `bcm2712-*.dtb`, `overlays/`), e.g. with `mdir -i metal-arm64.raw@@1M -/ ::/` (after `xz -d`). The image should have EFI, BIOS, BOOT and META partitions.
+After building, check that the image's EFI partition contains `u-boot.bin`, `config.txt` and the firmware (`bcm2712-*.dtb`, `overlays/`), e.g. with `mdir -i metal-arm64.raw@@1M -/ ::/` (after `xz -d`). The image should have EFI, BIOS, BOOT and META partitions.
 
 1. Try to apply the patches. If there are errors proceed to step 2, if not no further changes are needed.
 ```
@@ -125,6 +125,6 @@ make patches-talos
 ```
 cd checkouts/talos
 cp <updated modules-arm64.txt> hack/modules-arm64.txt
-git commit -am '[PATCH] Patched for Raspberry Pi 5'
+git commit -am 'Patched for Raspberry Pi 5'
 git format-patch --output-directory "../../patches/siderolabs/talos" HEAD~1
 ```

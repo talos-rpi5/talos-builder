@@ -1,8 +1,8 @@
 PKG_VERSION = release-1.14
-TALOS_VERSION = v1.14.5
+TALOS_VERSION = v1.14.6
 SBCOVERLAY_VERSION = main
 
-PKG_REF = f4bda77bb9f8202cac8443a7284ce1c7aa129f38
+PKG_REF = e6ad19df338a763890910b142f820d6712c39585
 TALOS_REF =
 SBCOVERLAY_REF = 2309c3483b495039e5526418e595281b678e91c9
 
@@ -13,7 +13,7 @@ PUSH ?= true
 TAG ?= $(shell git describe --tags --exact-match)
 
 EXTENSIONS ?= \
-	ghcr.io/siderolabs/gvisor:20260831.0@sha256:cbf753d767267e3f6b18be0875ee103d27c3153879019c07c6ad7eb51299d727 \
+	ghcr.io/siderolabs/gvisor:20260831.0@sha256:7c6cdd8e52baca1ca21e0c8f8d241ba0cda0e687dd4a9ac12baa3adae89e832c \
 	ghcr.io/siderolabs/iscsi-tools:v0.2.0@sha256:584e1d106e424d3e17ddd43bddf892b386748f10d11a9fd024a358f0d42c0a2e
 EXTENSION_ARGS = $(foreach ext,$(EXTENSIONS),--system-extension-image=$(ext))
 
