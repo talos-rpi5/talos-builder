@@ -14,7 +14,7 @@ So far, this release has been verified on:
 * Booting from USB: USB is only available once LINUX has booted up but not in U-Boot.
 
 ## How to use?
-The releases on this repository align with the corresponding Talos version. There is a raw disk image (initial setup) and an installer image (upgrades) provided. 
+The releases on this repository align with the corresponding Talos version. There is a raw disk image (initial setup), an installer image (upgrades), and netboot assets (kernel, initramfs, a ready-to-use `boot.ipxe` script) provided.
 
 ### Examples
 Initial:
@@ -24,6 +24,12 @@ dd if=metal-arm64.raw of=<disk> bs=4M status=progress
 sync
 ```
 Alternatively flash `metal-arm64.raw.xz` directly with Raspberry Pi Imager or balenaEtcher. The disk image uses GRUB as bootloader (U-Boot → GRUB → Talos), same as the upstream Sidero Labs SBC images.
+
+Netboot: point your DHCP/PXE setup at the release's `boot.ipxe` asset, e.g. from another iPXE script:
+```
+chain --replace https://github.com/talos-rpi5/talos-builder/releases/download/<version>/boot.ipxe
+```
+This boots straight into Talos maintenance mode (no disk install happens on its own) — apply a machine config the normal way (e.g. `talosctl apply-config`) to finish. The three assets backing it (`kernel-*`, `initramfs-*`, `boot.ipxe`) are produced the same way [siderolabs/image-factory](https://github.com/siderolabs/image-factory)'s own PXE frontend (`pxe.factory.talos.dev`) generates its assets — `imager --output-kind=kernel`/`initramfs`/`cmdline` — just as static files on the release instead of rendered per request, since this project's custom overlay isn't registered with Factory.
 
 Upgrade:
 ```

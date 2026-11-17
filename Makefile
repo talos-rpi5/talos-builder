@@ -38,6 +38,7 @@ help:
 	@echo "kernel    : Build kernel"
 	@echo "overlay   : Build Raspberry Pi 5 overlay"
 	@echo "installer : Build installer docker image and disk image"
+	@echo "netboot   : Build kernel/initramfs/cmdline assets for iPXE netboot (needs installer's imager image already pushed)"
 	@echo "release   : Use only when building the final release, this will tag relevant images with the current Git tag."
 	@echo "clean     : Clean up any remains"
 
@@ -121,6 +122,55 @@ installer:
 		docker \
 			run --rm -t -v ./_out:/out -v /dev:/dev --privileged $(REGISTRY)/$(REGISTRY_USERNAME)/imager:$(TALOS_TAG) \
 			rpi5 --arch arm64 \
+			--base-installer-image="$(REGISTRY)/$(REGISTRY_USERNAME)/installer:$(TALOS_TAG)" \
+			--overlay-name="rpi5" \
+			--overlay-image="$(REGISTRY)/$(REGISTRY_USERNAME)/sbc-raspberrypi5:$(SBCOVERLAY_TAG)" \
+			$(EXTENSION_ARGS)
+
+
+
+#
+# Netboot assets
+#
+# imager's --output-kind=kernel/initramfs/cmdline are the same outputs
+# siderolabs/image-factory's own pxe.factory.talos.dev generates
+# dynamically (confirmed directly in siderolabs/talos's
+# pkg/imager/profile and siderolabs/image-factory's
+# internal/frontend/http/api/standard.ipxe) -- this just runs our
+# already-built, already-pushed imager image (same one `installer`
+# above produces) three more times with a different --output-kind
+# instead of a new build. Unlike the disk-image build above, none of
+# these three need --privileged or -v /dev:/dev: outKernel/outInitramfs
+# are plain file copies and outCmdline just writes a string -- no loop
+# devices or partitioning involved.
+#
+# Each kind writes into its own subdirectory rather than a hardcoded
+# filename: imager's exact output filename depends on the resolved
+# base profile's platform (observed to differ from image-factory's own
+# docs in at least one case), so the caller is expected to glob
+# ./_out/netboot/<kind>/* for the one file each produces instead of
+# guessing the name.
+.PHONY: netboot
+netboot:
+	cd "$(CHECKOUTS_DIRECTORY)/talos" && \
+		mkdir -p ./_out/netboot/kernel ./_out/netboot/initramfs ./_out/netboot/cmdline && \
+		docker \
+			run --rm -t -v ./_out/netboot/kernel:/out $(REGISTRY)/$(REGISTRY_USERNAME)/imager:$(TALOS_TAG) \
+			rpi5 --arch arm64 --output-kind=kernel \
+			--base-installer-image="$(REGISTRY)/$(REGISTRY_USERNAME)/installer:$(TALOS_TAG)" \
+			--overlay-name="rpi5" \
+			--overlay-image="$(REGISTRY)/$(REGISTRY_USERNAME)/sbc-raspberrypi5:$(SBCOVERLAY_TAG)" \
+			$(EXTENSION_ARGS) && \
+		docker \
+			run --rm -t -v ./_out/netboot/initramfs:/out $(REGISTRY)/$(REGISTRY_USERNAME)/imager:$(TALOS_TAG) \
+			rpi5 --arch arm64 --output-kind=initramfs \
+			--base-installer-image="$(REGISTRY)/$(REGISTRY_USERNAME)/installer:$(TALOS_TAG)" \
+			--overlay-name="rpi5" \
+			--overlay-image="$(REGISTRY)/$(REGISTRY_USERNAME)/sbc-raspberrypi5:$(SBCOVERLAY_TAG)" \
+			$(EXTENSION_ARGS) && \
+		docker \
+			run --rm -t -v ./_out/netboot/cmdline:/out $(REGISTRY)/$(REGISTRY_USERNAME)/imager:$(TALOS_TAG) \
+			rpi5 --arch arm64 --output-kind=cmdline \
 			--base-installer-image="$(REGISTRY)/$(REGISTRY_USERNAME)/installer:$(TALOS_TAG)" \
 			--overlay-name="rpi5" \
 			--overlay-image="$(REGISTRY)/$(REGISTRY_USERNAME)/sbc-raspberrypi5:$(SBCOVERLAY_TAG)" \
