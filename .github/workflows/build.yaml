@@ -11,6 +11,19 @@ jobs:
       attestations: write
       id-token: write
     runs-on: ubuntu-24.04-arm
+    env:
+      # The Makefile's own default (REGISTRY_USERNAME ?= talos-rpi5) is
+      # fine for upstream, but a fork's GITHUB_TOKEN can only push GHCR
+      # packages under the fork owner's own namespace -- pushing to
+      # ghcr.io/talos-rpi5/... from a fork fails with "permission_denied:
+      # The requested installation does not exist" (confirmed: this is
+      # GHCR's actual error for "the authenticated identity has no
+      # package-push rights in this namespace", not a missing-repo 404).
+      # github.repository_owner is always correct for both upstream and
+      # any fork, so every `make` step below picks this up automatically
+      # (?= in the Makefile only applies when the variable isn't already
+      # set, and an inherited env var counts as already set).
+      REGISTRY_USERNAME: ${{ github.repository_owner }}
     steps:
       - uses: actions/checkout@v4
       - uses: imjasonh/setup-crane@v0.4
@@ -90,7 +103,7 @@ jobs:
           ### What's available
 
           - 📦 **Raw disk image** (\`metal-arm64.raw.xz\`) for fresh installs
-          - ⚙️ **Installer image** (\`ghcr.io/talos-rpi5/installer:${{ github.ref_name }}\`) for upgrades
+          - ⚙️ **Installer image** (\`ghcr.io/${{ github.repository_owner }}/installer:${{ github.ref_name }}\`) for upgrades
           - 🌐 **Netboot assets** (kernel, initramfs, \`boot.ipxe\`) -- point a DHCP/PXE server's boot option (or an \`ipxe chain\`) at this release's \`boot.ipxe\` asset URL to netboot straight into Talos maintenance mode, the same way \`pxe.factory.talos.dev\` does for an official schematic. Generated the same way Image Factory's own PXE frontend does (\`imager --output-kind=kernel/initramfs/cmdline\`), just as static assets on this release instead of rendered per-request.
 
           ### Install
@@ -105,7 +118,7 @@ jobs:
 
           - **Upgrade existing node**
             \`\`\`bash
-            talosctl upgrade --nodes <NODE_IP> --image ghcr.io/talos-rpi5/installer:${{ github.ref_name }}
+            talosctl upgrade --nodes <NODE_IP> --image ghcr.io/${{ github.repository_owner }}/installer:${{ github.ref_name }}
             \`\`\`
 
           EOF
