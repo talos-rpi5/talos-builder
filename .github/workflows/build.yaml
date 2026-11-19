@@ -123,6 +123,17 @@ jobs:
 
           EOF
           )
+          # Re-running the workflow against a tag that already has a
+          # release (a retry, or re-pushing the same tag while iterating)
+          # otherwise fails outright: `gh release create` isn't
+          # idempotent -- "a release with the same tag name already
+          # exists". Everything here is CI-generated with nothing
+          # hand-curated to lose, so delete-and-recreate is safe; this is
+          # the same idiom conallob/homelab-apps' publish.yml already
+          # uses for the equivalent re-run case there.
+          if gh release view ${{ github.ref_name }} >/dev/null 2>&1; then
+            gh release delete ${{ github.ref_name }} --yes --cleanup-tag=false
+          fi
           gh release create \
             ${{ github.ref_name }} \
             ./checkouts/talos/_out/metal-arm64.raw.xz \
