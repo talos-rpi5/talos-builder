@@ -38,6 +38,7 @@ help:
 	@echo "kernel    : Build kernel"
 	@echo "overlay   : Build Raspberry Pi 5 overlay"
 	@echo "installer : Build installer docker image and disk image"
+	@echo "netboot   : Build kernel/initramfs/cmdline assets for iPXE netboot (needs installer's imager image already pushed)"
 	@echo "release   : Use only when building the final release, this will tag relevant images with the current Git tag."
 	@echo "clean     : Clean up any remains"
 
@@ -125,6 +126,41 @@ installer:
 			--overlay-name="rpi5" \
 			--overlay-image="$(REGISTRY)/$(REGISTRY_USERNAME)/sbc-raspberrypi5:$(SBCOVERLAY_TAG)" \
 			$(EXTENSION_ARGS)
+
+
+
+#
+# Netboot assets
+#
+# imager's kernel/initramfs/cmdline outputs are the same ones
+# siderolabs/image-factory's own pxe.factory.talos.dev generates
+# dynamically (confirmed directly in siderolabs/talos's
+# pkg/imager/profile and siderolabs/image-factory's
+# internal/frontend/http/api/standard.ipxe) -- this runs our
+# already-built, already-pushed imager image (same one `installer`
+# above produces) three more times instead of a new build.
+#
+# Goes through scripts/netboot-asset.sh (a minimal custom profile piped
+# to `imager -` on stdin) rather than `imager rpi5 --output-kind=...`:
+# the named `rpi5` profile bakes in output.outFormat: .xz (meant for the
+# disk-image build above), there's no CLI flag to override just that,
+# and it breaks `initramfs` outright (its own filename already ends in
+# .xz, so imager's own second compression pass collides with itself) and
+# silently mis-produces `kernel` (wraps the vmlinuz in an .xz iPXE can't
+# decompress on load). See that script's own comment for the full
+# chain of evidence. Unlike the disk-image build above, none of these
+# three need --privileged or -v /dev:/dev: outKernel/outInitramfs are
+# plain file copies and outCmdline just writes a string -- no loop
+# devices or partitioning involved.
+.PHONY: netboot
+netboot:
+	cd "$(CHECKOUTS_DIRECTORY)/talos" && \
+		export REGISTRY=$(REGISTRY) REGISTRY_USERNAME=$(REGISTRY_USERNAME) \
+			TALOS_TAG=$(TALOS_TAG) SBCOVERLAY_TAG=$(SBCOVERLAY_TAG) \
+			EXTENSIONS="$(EXTENSIONS)" && \
+		bash "$(CURDIR)/scripts/netboot-asset.sh" kernel ./_out/netboot/kernel && \
+		bash "$(CURDIR)/scripts/netboot-asset.sh" initramfs ./_out/netboot/initramfs && \
+		bash "$(CURDIR)/scripts/netboot-asset.sh" cmdline ./_out/netboot/cmdline
 
 
 
