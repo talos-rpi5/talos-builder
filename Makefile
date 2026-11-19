@@ -132,49 +132,35 @@ installer:
 #
 # Netboot assets
 #
-# imager's --output-kind=kernel/initramfs/cmdline are the same outputs
+# imager's kernel/initramfs/cmdline outputs are the same ones
 # siderolabs/image-factory's own pxe.factory.talos.dev generates
 # dynamically (confirmed directly in siderolabs/talos's
 # pkg/imager/profile and siderolabs/image-factory's
-# internal/frontend/http/api/standard.ipxe) -- this just runs our
+# internal/frontend/http/api/standard.ipxe) -- this runs our
 # already-built, already-pushed imager image (same one `installer`
-# above produces) three more times with a different --output-kind
-# instead of a new build. Unlike the disk-image build above, none of
-# these three need --privileged or -v /dev:/dev: outKernel/outInitramfs
-# are plain file copies and outCmdline just writes a string -- no loop
-# devices or partitioning involved.
+# above produces) three more times instead of a new build.
 #
-# Each kind writes into its own subdirectory rather than a hardcoded
-# filename: imager's exact output filename depends on the resolved
-# base profile's platform (observed to differ from image-factory's own
-# docs in at least one case), so the caller is expected to glob
-# ./_out/netboot/<kind>/* for the one file each produces instead of
-# guessing the name.
+# Goes through scripts/netboot-asset.sh (a minimal custom profile piped
+# to `imager -` on stdin) rather than `imager rpi5 --output-kind=...`:
+# the named `rpi5` profile bakes in output.outFormat: .xz (meant for the
+# disk-image build above), there's no CLI flag to override just that,
+# and it breaks `initramfs` outright (its own filename already ends in
+# .xz, so imager's own second compression pass collides with itself) and
+# silently mis-produces `kernel` (wraps the vmlinuz in an .xz iPXE can't
+# decompress on load). See that script's own comment for the full
+# chain of evidence. Unlike the disk-image build above, none of these
+# three need --privileged or -v /dev:/dev: outKernel/outInitramfs are
+# plain file copies and outCmdline just writes a string -- no loop
+# devices or partitioning involved.
 .PHONY: netboot
 netboot:
 	cd "$(CHECKOUTS_DIRECTORY)/talos" && \
-		mkdir -p ./_out/netboot/kernel ./_out/netboot/initramfs ./_out/netboot/cmdline && \
-		docker \
-			run --rm -t -v ./_out/netboot/kernel:/out $(REGISTRY)/$(REGISTRY_USERNAME)/imager:$(TALOS_TAG) \
-			rpi5 --arch arm64 --output-kind=kernel \
-			--base-installer-image="$(REGISTRY)/$(REGISTRY_USERNAME)/installer:$(TALOS_TAG)" \
-			--overlay-name="rpi5" \
-			--overlay-image="$(REGISTRY)/$(REGISTRY_USERNAME)/sbc-raspberrypi5:$(SBCOVERLAY_TAG)" \
-			$(EXTENSION_ARGS) && \
-		docker \
-			run --rm -t -v ./_out/netboot/initramfs:/out $(REGISTRY)/$(REGISTRY_USERNAME)/imager:$(TALOS_TAG) \
-			rpi5 --arch arm64 --output-kind=initramfs \
-			--base-installer-image="$(REGISTRY)/$(REGISTRY_USERNAME)/installer:$(TALOS_TAG)" \
-			--overlay-name="rpi5" \
-			--overlay-image="$(REGISTRY)/$(REGISTRY_USERNAME)/sbc-raspberrypi5:$(SBCOVERLAY_TAG)" \
-			$(EXTENSION_ARGS) && \
-		docker \
-			run --rm -t -v ./_out/netboot/cmdline:/out $(REGISTRY)/$(REGISTRY_USERNAME)/imager:$(TALOS_TAG) \
-			rpi5 --arch arm64 --output-kind=cmdline \
-			--base-installer-image="$(REGISTRY)/$(REGISTRY_USERNAME)/installer:$(TALOS_TAG)" \
-			--overlay-name="rpi5" \
-			--overlay-image="$(REGISTRY)/$(REGISTRY_USERNAME)/sbc-raspberrypi5:$(SBCOVERLAY_TAG)" \
-			$(EXTENSION_ARGS)
+		export REGISTRY=$(REGISTRY) REGISTRY_USERNAME=$(REGISTRY_USERNAME) \
+			TALOS_TAG=$(TALOS_TAG) SBCOVERLAY_TAG=$(SBCOVERLAY_TAG) \
+			EXTENSIONS="$(EXTENSIONS)" && \
+		bash "$(CURDIR)/scripts/netboot-asset.sh" kernel ./_out/netboot/kernel && \
+		bash "$(CURDIR)/scripts/netboot-asset.sh" initramfs ./_out/netboot/initramfs && \
+		bash "$(CURDIR)/scripts/netboot-asset.sh" cmdline ./_out/netboot/cmdline
 
 
 
