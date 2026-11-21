@@ -1,41 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Builds one netboot asset (kernel, initramfs, or cmdline) by feeding
-# `imager` a minimal custom profile over stdin instead of using the
-# `rpi5` named profile's CLI shortcut (`imager rpi5 --output-kind=...`).
+# Builds one netboot asset (kernel, initramfs, or cmdline) by feeding imager a
+# minimal profile on stdin, rather than `imager rpi5 --output-kind=...`.
 #
-# That named profile bakes in `output.outFormat: .xz` (sensible for the
-# full disk-image build), and `--output-kind` only overrides the output
-# *kind* -- `outFormat` carries straight through with no CLI flag to
-# override it (checked directly against imager's own CLI code,
-# cmd/installer/cmd/imager/root.go: no --output-format flag exists).
-# `imager` always runs a second, generic compression pass keyed off
-# outFormat after writing the kind-specific output (pkg/imager/imager.go,
-# Execute(), step 6). For `initramfs`, whose own filename already ends in
-# `.xz` (profile.OutputPath()'s naming for that kind), that second pass
-# collides with itself: `xz: ...: File already has '.xz' suffix,
-# skipping`, exit 2 -- the actual failure this script exists to avoid.
-# For `kernel` the same pass "succeeds" but silently wraps the vmlinuz in
-# an extra .xz layer that iPXE's `kernel` directive can't decompress on
-# load, so that output was wrong too, just without a crash to notice it.
+# The rpi5 profile sets outFormat: .xz and imager has no flag to override it.
+# That makes imager's second compression pass fail on initramfs (name already
+# ends in .xz) and silently wrap kernel in an .xz that iPXE can't decompress.
+# `outFormat: raw` skips that pass.
 #
-# `outFormat: raw` in the profile below skips that second pass entirely,
-# for all three kinds -- the vmlinuz comes out exactly as the installer
-# image ships it, and the initramfs (itself already real xz-compressed
-# cpio data, the normal Linux initrd format) isn't wrapped a second time.
-#
-# input.kernel.path / input.initramfs.path are the fixed, conventional
-# paths every Talos installer image ships at (confirmed against the
-# profile imager itself printed while resolving the `rpi5` named
-# profile) -- not something this script computes per build.
-#
-# Usage: netboot-asset.sh <kind> <output-dir>
-#   kind: kernel | initramfs | cmdline
-#
-# Reads REGISTRY, REGISTRY_USERNAME, TALOS_TAG, SBCOVERLAY_TAG,
-# EXTENSIONS (space-separated image refs) from the environment -- same
-# variables the Makefile already computes for every other target.
+# Usage: netboot-asset.sh <kind> <output-dir>   (kind: kernel|initramfs|cmdline)
+# Reads REGISTRY, REGISTRY_USERNAME, TALOS_TAG, SBCOVERLAY_TAG, EXTENSIONS
+# from the environment, as set by the Makefile.
 
 KIND="$1"
 OUT_DIR="$2"

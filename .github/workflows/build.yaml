@@ -12,17 +12,8 @@ jobs:
       id-token: write
     runs-on: ubuntu-24.04-arm
     env:
-      # The Makefile's own default (REGISTRY_USERNAME ?= talos-rpi5) is
-      # fine for upstream, but a fork's GITHUB_TOKEN can only push GHCR
-      # packages under the fork owner's own namespace -- pushing to
-      # ghcr.io/talos-rpi5/... from a fork fails with "permission_denied:
-      # The requested installation does not exist" (confirmed: this is
-      # GHCR's actual error for "the authenticated identity has no
-      # package-push rights in this namespace", not a missing-repo 404).
-      # github.repository_owner is always correct for both upstream and
-      # any fork, so every `make` step below picks this up automatically
-      # (?= in the Makefile only applies when the variable isn't already
-      # set, and an inherited env var counts as already set).
+      # A fork's GITHUB_TOKEN can only push to its own GHCR namespace, not the
+      # Makefile's default (talos-rpi5). An inherited env var overrides `?=`.
       REGISTRY_USERNAME: ${{ github.repository_owner }}
     steps:
       - uses: actions/checkout@v4
@@ -60,9 +51,7 @@ jobs:
           set -euo pipefail
           OUT=./checkouts/talos/_out/netboot
 
-          # Each kind's directory holds exactly one file; imager's exact
-          # filename depends on the resolved base profile and isn't worth
-          # hardcoding (see the netboot target's comment in the Makefile).
+          # Each kind's directory holds one file; its name depends on the profile.
           KERNEL_FILE=$(basename "$(ls "$OUT"/kernel/*)")
           INITRAMFS_FILE=$(basename "$(ls "$OUT"/initramfs/*)")
           CMDLINE_FILE=$(ls "$OUT"/cmdline/*)
@@ -71,10 +60,7 @@ jobs:
           INITRAMFS_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/$INITRAMFS_FILE"
           CMDLINE=$(cat "$CMDLINE_FILE")
 
-          # Same shape as siderolabs/image-factory's own
-          # internal/frontend/http/api/standard.ipxe (confirmed directly
-          # against that file) -- this is a static equivalent for a fixed
-          # release instead of Factory's per-request dynamic rendering.
+          # Static equivalent of image-factory's standard.ipxe.
           cat > "$OUT/boot.ipxe" <<IPXE
           #!ipxe
 
@@ -123,14 +109,7 @@ jobs:
 
           EOF
           )
-          # Re-running the workflow against a tag that already has a
-          # release (a retry, or re-pushing the same tag while iterating)
-          # otherwise fails outright: `gh release create` isn't
-          # idempotent -- "a release with the same tag name already
-          # exists". Everything here is CI-generated with nothing
-          # hand-curated to lose, so delete-and-recreate is safe; this is
-          # the same idiom conallob/homelab-apps' publish.yml already
-          # uses for the equivalent re-run case there.
+          # `gh release create` fails if the tag already has a release; recreate it.
           if gh release view ${{ github.ref_name }} >/dev/null 2>&1; then
             gh release delete ${{ github.ref_name }} --yes --cleanup-tag=false
           fi
