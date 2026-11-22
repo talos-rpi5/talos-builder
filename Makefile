@@ -38,7 +38,8 @@ help:
 	@echo "kernel    : Build kernel"
 	@echo "overlay   : Build Raspberry Pi 5 overlay"
 	@echo "installer : Build installer docker image and disk image"
-	@echo "netboot   : Build kernel/initramfs/cmdline assets for iPXE netboot (needs installer's imager image already pushed)"
+	@echo "netboot   : Build kernel/initramfs/cmdline assets (needs the pushed imager image)"
+	@echo "netboot-ipxe : Generate boot.ipxe for the release (run after netboot)"
 	@echo "release   : Use only when building the final release, this will tag relevant images with the current Git tag."
 	@echo "clean     : Clean up any remains"
 
@@ -132,10 +133,7 @@ installer:
 #
 # Netboot assets
 #
-# Reuses the already-pushed imager image to emit kernel/initramfs/cmdline, as
-# image-factory's PXE frontend does. Goes through scripts/netboot-asset.sh
-# (see its comment for why not `imager rpi5 --output-kind`). Unlike the disk
-# image, no --privileged or /dev mount is needed.
+# Reuses the pushed imager image; see scripts/netboot-asset.sh.
 .PHONY: netboot
 netboot:
 	cd "$(CHECKOUTS_DIRECTORY)/talos" && \
@@ -145,6 +143,15 @@ netboot:
 		bash "$(CURDIR)/scripts/netboot-asset.sh" kernel ./_out/netboot/kernel && \
 		bash "$(CURDIR)/scripts/netboot-asset.sh" initramfs ./_out/netboot/initramfs && \
 		bash "$(CURDIR)/scripts/netboot-asset.sh" cmdline ./_out/netboot/cmdline
+
+# Run after `netboot`. GITHUB_REPOSITORY is owner/repo.
+.PHONY: netboot-ipxe
+netboot-ipxe:
+	cd "$(CHECKOUTS_DIRECTORY)/talos/_out/netboot" && \
+		URL="https://github.com/$(GITHUB_REPOSITORY)/releases/download/$(TAG)" && \
+		printf '#!ipxe\n\nimgfree\nkernel %s/%s %s\ninitrd %s/%s\nboot\n' \
+			"$$URL" "$$(basename kernel/*)" "$$(cat cmdline/*)" \
+			"$$URL" "$$(basename initramfs/*)" > boot.ipxe
 
 
 

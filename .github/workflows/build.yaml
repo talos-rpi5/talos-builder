@@ -12,8 +12,6 @@ jobs:
       id-token: write
     runs-on: ubuntu-24.04-arm
     env:
-      # A fork's GITHUB_TOKEN can only push to its own GHCR namespace, not the
-      # Makefile's default (talos-rpi5). An inherited env var overrides `?=`.
       REGISTRY_USERNAME: ${{ github.repository_owner }}
     steps:
       - uses: actions/checkout@v4
@@ -47,31 +45,7 @@ jobs:
         run: make netboot
 
       - name: Generate iPXE script
-        run: |
-          set -euo pipefail
-          OUT=./checkouts/talos/_out/netboot
-
-          # Each kind's directory holds one file; its name depends on the profile.
-          KERNEL_FILE=$(basename "$(ls "$OUT"/kernel/*)")
-          INITRAMFS_FILE=$(basename "$(ls "$OUT"/initramfs/*)")
-          CMDLINE_FILE=$(ls "$OUT"/cmdline/*)
-
-          KERNEL_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/$KERNEL_FILE"
-          INITRAMFS_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/$INITRAMFS_FILE"
-          CMDLINE=$(cat "$CMDLINE_FILE")
-
-          # Static equivalent of image-factory's standard.ipxe.
-          cat > "$OUT/boot.ipxe" <<IPXE
-          #!ipxe
-
-          imgfree
-          kernel $KERNEL_URL $CMDLINE
-          initrd $INITRAMFS_URL
-          boot
-          IPXE
-
-          echo "KERNEL_PATH=$OUT/kernel/$KERNEL_FILE" >> "$GITHUB_ENV"
-          echo "INITRAMFS_PATH=$OUT/initramfs/$INITRAMFS_FILE" >> "$GITHUB_ENV"
+        run: make netboot-ipxe
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -91,8 +65,7 @@ jobs:
 
           - 📦 **Raw disk image** (\`metal-arm64.raw.xz\`) for fresh installs
           - ⚙️ **Installer image** (\`ghcr.io/${{ github.repository_owner }}/installer:${{ github.ref_name }}\`) for upgrades
-          - 🌐 **Netboot assets** (kernel, initramfs, \`boot.ipxe\`) -- point a DHCP/PXE server's boot option (or an \`ipxe chain\`) at this release's \`boot.ipxe\` asset URL to netboot straight into Talos maintenance mode, the same way \`pxe.factory.talos.dev\` does for an official schematic. Generated the same way Image Factory's own PXE frontend does (\`imager --output-kind=kernel/initramfs/cmdline\`), just as static assets on this release instead of rendered per-request.
-
+          - 🌐 **Netboot assets** (kernel, initramfs, \`boot.ipxe\`)
           ### Install
 
           - **Fresh install**
@@ -118,8 +91,8 @@ jobs:
           gh release create \
             ${{ github.ref_name }} \
             ./checkouts/talos/_out/metal-arm64.raw.xz \
-            "$KERNEL_PATH" \
-            "$INITRAMFS_PATH" \
+            ./checkouts/talos/_out/netboot/kernel/* \
+            ./checkouts/talos/_out/netboot/initramfs/* \
             ./checkouts/talos/_out/netboot/boot.ipxe \
             --title "${{ github.ref_name }}" \
             --notes "$NOTES"
