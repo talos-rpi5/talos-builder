@@ -80,6 +80,7 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPLACE_EXISTING_RELEASE: ${{ vars.REPLACE_EXISTING_RELEASE }}
         run: |
           NOTES=$(cat <<EOF
           > ⚠️ Experimental build, use at your own risk.
@@ -109,8 +110,9 @@ jobs:
 
           EOF
           )
-          # `gh release create` fails if the tag already has a release; recreate it.
-          if gh release view ${{ github.ref_name }} >/dev/null 2>&1; then
+          # Opt-in (repo variable REPLACE_EXISTING_RELEASE=true), e.g. for forks.
+          # Off by default: published releases should stay immutable.
+          if [ "${REPLACE_EXISTING_RELEASE:-false}" = true ] && gh release view ${{ github.ref_name }} >/dev/null 2>&1; then
             gh release delete ${{ github.ref_name }} --yes --cleanup-tag=false
           fi
           gh release create \
