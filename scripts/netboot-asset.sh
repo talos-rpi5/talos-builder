@@ -2,8 +2,9 @@
 set -euo pipefail
 
 # Builds one netboot asset (kind: kernel|initramfs|cmdline) into <output-dir>.
-# `outFormat: raw` overrides the rpi5 profile's .xz, which breaks initramfs and
-# double-compresses kernel.
+# A standalone profile is used because imager does not inherit from a named
+# profile via stdin, and `rpi5`'s .xz outFormat breaks initramfs and
+# double-compresses kernel; `outFormat: raw` avoids that.
 # Usage: netboot-asset.sh <kind> <output-dir>
 # Env: REGISTRY, REGISTRY_USERNAME, TALOS_TAG, SBCOVERLAY_TAG, EXTENSIONS
 
@@ -19,8 +20,8 @@ done
 mkdir -p "$OUT_DIR"
 
 docker run --rm -i -v "$OUT_DIR:/out" "$REGISTRY/$REGISTRY_USERNAME/imager:$TALOS_TAG" - <<PROFILE
-baseProfile: rpi5
 arch: arm64
+platform: metal
 version: $TALOS_TAG
 input:
   baseInstaller:
