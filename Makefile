@@ -2,7 +2,7 @@ PKG_VERSION = release-1.14
 TALOS_VERSION = v1.14.7
 SBCOVERLAY_VERSION = main
 
-PKG_REF = e6ad19df338a763890910b142f820d6712c39585
+PKG_REF = a1a4897db70d69ca5b2d8466668b5d3f7d405840
 TALOS_REF =
 SBCOVERLAY_REF = 2309c3483b495039e5526418e595281b678e91c9
 
@@ -25,7 +25,7 @@ CHECKOUTS_DIRECTORY := $(PWD)/checkouts
 PATCHES_DIRECTORY := $(PWD)/patches
 
 PKGS_TAG = $(shell cd $(CHECKOUTS_DIRECTORY)/pkgs && git describe --tag --always --dirty --match v[0-9]\*)
-TALOS_TAG = $(shell cd $(CHECKOUTS_DIRECTORY)/talos && git describe --tag --always --dirty --match v[0-9]\*)
+TALOS_TAG = $(TALOS_VERSION)
 SBCOVERLAY_TAG = $(shell cd $(CHECKOUTS_DIRECTORY)/sbc-raspberrypi5 && git describe --tag --always --dirty)-$(PKGS_TAG)
 
 #
@@ -116,6 +116,7 @@ installer:
 	cd "$(CHECKOUTS_DIRECTORY)/talos" && \
 		$(MAKE) \
 			REGISTRY=$(REGISTRY) USERNAME=$(REGISTRY_USERNAME) PUSH=$(PUSH) \
+			TAG=$(TALOS_TAG) \
 			PKG_KERNEL=$(REGISTRY)/$(REGISTRY_USERNAME)/kernel:$(PKGS_TAG) \
 			INSTALLER_ARCH=arm64 PLATFORM=linux/arm64 \
 			IMAGER_ARGS="--overlay-name=rpi5 --overlay-image=$(REGISTRY)/$(REGISTRY_USERNAME)/sbc-raspberrypi5:$(SBCOVERLAY_TAG) $(EXTENSION_ARGS)" \
