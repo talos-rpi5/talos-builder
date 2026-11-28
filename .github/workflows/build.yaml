@@ -11,6 +11,8 @@ jobs:
       attestations: write
       id-token: write
     runs-on: ubuntu-24.04-arm
+    env:
+      REGISTRY_USERNAME: ${{ github.repository_owner }}
     steps:
       - uses: actions/checkout@v4
       - uses: imjasonh/setup-crane@v0.4
@@ -39,6 +41,12 @@ jobs:
       - name: Installer
         run: make installer
 
+      - name: Netboot assets
+        run: make netboot
+
+      - name: Generate iPXE script
+        run: make netboot-ipxe
+
       - name: Release
         if: startsWith(github.ref, 'refs/tags/v')
         run: make release
@@ -46,6 +54,7 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPLACE_EXISTING_RELEASE: ${{ vars.REPLACE_EXISTING_RELEASE }}
         run: |
           NOTES=$(cat <<EOF
           > ⚠️ Experimental build, use at your own risk.
@@ -55,23 +64,35 @@ jobs:
           ### What's available
 
           - 📦 **Raw disk image** (\`metal-arm64.raw.xz\`) for fresh installs
-          - ⚙️ **Installer image** (\`ghcr.io/talos-rpi5/installer:${{ github.ref_name }}\`) for upgrades
-
+          - ⚙️ **Installer image** (\`ghcr.io/${{ github.repository_owner }}/installer:${{ github.ref_name }}\`) for upgrades
+          - 🌐 **Netboot assets** (kernel, initramfs, \`boot.ipxe\`)
           ### Install
 
           - **Fresh install**
             - Download the raw disk image from this release
             - Decompress (\`xz -d metal-arm64.raw.xz\`) and flash with \`dd\`, or flash the \`.xz\` directly with Raspberry Pi Imager / balenaEtcher
 
+          - **Netboot**
+            - Point your PXE/iPXE setup at this release's \`boot.ipxe\` asset (e.g. \`chain --replace https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/boot.ipxe\`)
+            - Boots into Talos maintenance mode; apply a machine config the normal way (e.g. \`talosctl apply-config\`) to finish
+
           - **Upgrade existing node**
             \`\`\`bash
-            talosctl upgrade --nodes <NODE_IP> --image ghcr.io/talos-rpi5/installer:${{ github.ref_name }}
+            talosctl upgrade --nodes <NODE_IP> --image ghcr.io/${{ github.repository_owner }}/installer:${{ github.ref_name }}
             \`\`\`
 
           EOF
           )
+          # Opt-in (repo variable REPLACE_EXISTING_RELEASE=true), e.g. for forks.
+          # Off by default: published releases should stay immutable.
+          if [ "${REPLACE_EXISTING_RELEASE:-false}" = true ] && gh release view ${{ github.ref_name }} >/dev/null 2>&1; then
+            gh release delete ${{ github.ref_name }} --yes --cleanup-tag=false
+          fi
           gh release create \
             ${{ github.ref_name }} \
             ./checkouts/talos/_out/metal-arm64.raw.xz \
+            ./checkouts/talos/_out/netboot/kernel/* \
+            ./checkouts/talos/_out/netboot/initramfs/* \
+            ./checkouts/talos/_out/netboot/boot.ipxe \
             --title "${{ github.ref_name }}" \
             --notes "$NOTES"
